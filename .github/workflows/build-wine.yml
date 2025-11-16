@@ -6,12 +6,10 @@ on:
       - main
     paths:
       - 'life-is-feudal/wine/**'
-      - 'life-is-feudal/entrypoint.sh'
       - '.github/workflows/build-wine.yml'
   pull_request:
     paths:
       - 'life-is-feudal/wine/**'
-      - 'life-is-feudal/entrypoint.sh'
   workflow_dispatch:
 
 env:
@@ -46,7 +44,7 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
             type=raw,value=latest,enable={{is_default_branch}}
-            type=sha,prefix={{branch}}-
+            type=sha
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
