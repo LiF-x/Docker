@@ -2,6 +2,19 @@
 
 This directory contains Docker container definitions for running Life is Feudal: Your Own on Pterodactyl panel.
 
+## Pre-built Images
+
+Both containers are automatically built and published to GitHub Container Registry:
+
+- **MariaDB**: `ghcr.io/lif-x/lif-mariadb:latest`
+- **Wine**: `ghcr.io/lif-x/lif-wine:latest`
+
+You can pull and use these images directly:
+```bash
+docker pull ghcr.io/lif-x/lif-mariadb:latest
+docker pull ghcr.io/lif-x/lif-wine:latest
+```
+
 ## Containers
 
 ### 1. MariaDB Container
@@ -45,7 +58,17 @@ See [wine/README.md](wine/README.md) for detailed documentation.
 
 ## Quick Start
 
-### Building Both Images
+### Using Pre-built Images
+
+Simply pull the images from GitHub Container Registry:
+```bash
+docker pull ghcr.io/lif-x/lif-mariadb:latest
+docker pull ghcr.io/lif-x/lif-wine:latest
+```
+
+### Building Both Images Locally
+
+If you prefer to build the images yourself:
 
 ```bash
 # Build from the life-is-feudal directory
@@ -67,7 +90,7 @@ version: '3.8'
 
 services:
   database:
-    image: lif-mariadb:latest
+    image: ghcr.io/lif-x/lif-mariadb:latest
     container_name: lif-database
     environment:
       MYSQL_ROOT_PASSWORD: your_secure_root_password
@@ -83,7 +106,7 @@ services:
       - lif-network
 
   gameserver:
-    image: lif-wine:latest
+    image: ghcr.io/lif-x/lif-wine:latest
     container_name: lif-gameserver
     depends_on:
       - database
@@ -123,12 +146,12 @@ These containers are designed to integrate with Pterodactyl panel:
 ### Recommended Egg Configuration
 
 #### MariaDB Egg
-- **Docker Image:** `lif-mariadb:latest`
+- **Docker Image:** `ghcr.io/lif-x/lif-mariadb:latest`
 - **Startup Command:** Configured via STARTUP environment variable
 - **Environment Variables:** As needed by your server configuration
 
 #### Game Server Egg
-- **Docker Image:** `lif-wine:latest`
+- **Docker Image:** `ghcr.io/lif-x/lif-wine:latest`
 - **Startup Command:** `wine /home/container/cm_server.exe` (adjust based on your server executable)
 - **Environment Variables:** As needed by your server configuration
 
@@ -163,6 +186,19 @@ Life is Feudal: Your Own Setup
 | MariaDB | 3306 | TCP | Database connections |
 | Game Server | 28000 | UDP | Game traffic |
 | Query/RCON | 28100 | TCP | Server queries/management |
+
+## Automated Builds
+
+Both containers are automatically built and published via GitHub Actions:
+
+- **MariaDB**: Triggered on changes to `life-is-feudal/mariadb/` directory
+- **Wine**: Triggered on changes to `life-is-feudal/wine/` directory
+
+Images are pushed to GitHub Container Registry with the `latest` tag on merges to the `main` branch.
+
+Workflow files:
+- `.github/workflows/build-mariadb.yml`
+- `.github/workflows/build-wine.yml`
 
 ## Support
 

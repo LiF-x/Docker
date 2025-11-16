@@ -8,8 +8,10 @@ Docker containers for running Life is Feudal: Your Own on Pterodactyl.
 
 Located in `life-is-feudal/`
 
-**Containers:**
-- **MariaDB 10.3** - Database container optimized for LiF:YO
-- **Wine (latest)** - Game server container with Wine support
+**Pre-built Images:**
+- `ghcr.io/lif-x/lif-mariadb:latest` - MariaDB database container
+- `ghcr.io/lif-x/lif-wine:latest` - Wine game server container
+
+Both images are automatically built and published via GitHub Actions.
 
 See [life-is-feudal/README.md](life-is-feudal/README.md) for detailed documentation.
