@@ -1,7 +1,7 @@
 FROM --platform=$BUILDPLATFORM debian:bookworm-slim
 
 LABEL author="Christophe Roblin" maintainer="christophe@rampart.games"
-LABEL org.opencontainers.image.source="https://github.com/Rampart-Games-Limited/yolks"
+LABEL org.opencontainers.image.source="https://github.com/lif-x/docker"
 LABEL org.opencontainers.image.licenses=MIT
 
 ARG DEBIAN_FRONTEND=noninteractive
