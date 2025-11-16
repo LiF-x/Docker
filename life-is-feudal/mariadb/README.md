@@ -1,29 +1,29 @@
 # Life is Feudal: Your Own - MariaDB Container
 
-This Docker container provides a MariaDB 10.3 database optimized for Life is Feudal: Your Own game server when running on Pterodactyl.
+This Docker container provides a MariaDB database for Life is Feudal: Your Own game server when running on Pterodactyl.
 
 ## Features
 
-- Based on official MariaDB 10.3 image
-- Pre-configured for optimal Life is Feudal: Your Own performance
-- UTF-8MB4 character set support
-- Optimized InnoDB settings for game data
-- Health checks included
+- Based on Debian Bookworm with MariaDB server
+- Lightweight and efficient
+- Custom entrypoint for Pterodactyl integration
+- Automatic MySQL upgrade on startup
+- Non-root user for security
 - Compatible with Pterodactyl panel
 
 ## Environment Variables
 
-You can customize the following environment variables:
+The container uses the following environment variables:
 
-- `MYSQL_ROOT_PASSWORD`: Root password (default: lifisfeudal)
-- `MYSQL_DATABASE`: Default database name (default: lif_gameserver)
-- `MYSQL_USER`: Default user (default: lif_user)
-- `MYSQL_PASSWORD`: Default user password (default: lif_password)
+- `STARTUP`: The startup command for the MariaDB server (provided by Pterodactyl)
+- `INTERNAL_IP`: Automatically set to the container's internal IP address
+- `USER_ID`, `GROUP_ID`, `USER_NAME`: User information for NSS wrapper
 
 ## Building the Image
 
 ```bash
-docker build -t lif-mariadb:10.3 .
+cd life-is-feudal
+docker build -f mariadb/Dockerfile -t lif-mariadb:latest .
 ```
 
 ## Running the Container
@@ -34,37 +34,29 @@ docker build -t lif-mariadb:10.3 .
 docker run -d \
   --name lif-mariadb \
   -p 3306:3306 \
-  -e MYSQL_ROOT_PASSWORD=your_secure_password \
-  -e MYSQL_DATABASE=lif_gameserver \
-  -e MYSQL_USER=lif_user \
-  -e MYSQL_PASSWORD=your_user_password \
-  -v lif-data:/var/lib/mysql \
-  lif-mariadb:10.3
+  -e STARTUP="/usr/sbin/mysqld" \
+  -v lif-data:/home/container \
+  lif-mariadb:latest
 ```
 
 ### With Pterodactyl
 
 This image is designed to work with Pterodactyl. Configure your egg to use this image and set the appropriate environment variables through the panel.
 
-## Configuration
+## How It Works
 
-The container includes a custom MariaDB configuration file (`my.cnf`) that optimizes:
+The container:
 
-- Character set (UTF-8MB4)
-- Connection pooling
-- Buffer sizes
-- Query cache
-- InnoDB settings
+1. Starts a temporary MariaDB instance in the background
+2. Runs `mysql_upgrade` to ensure database compatibility
+3. Stops the temporary instance
+4. Executes the command specified in the `STARTUP` environment variable
 
-You can override this configuration by mounting your own `my.cnf` file:
+This ensures the database is properly initialized before your game server starts.
 
-```bash
--v /path/to/your/my.cnf:/etc/mysql/conf.d/lif-custom.cnf
-```
+## User
 
-## Health Check
-
-The container includes a health check that verifies MariaDB is responding to ping commands every 30 seconds.
+The container runs as the `container` user (non-root) for security. All files should be owned by this user.
 
 ## Ports
 
@@ -72,10 +64,11 @@ The container includes a health check that verifies MariaDB is responding to pin
 
 ## Volumes
 
-- `/var/lib/mysql`: Database data directory
+- `/home/container`: Container working directory and data storage
 
 ## Notes
 
-- Default credentials are provided for convenience but should be changed in production
-- Make sure to persist the `/var/lib/mysql` volume to avoid data loss
-- The container may take 20-30 seconds to fully initialize on first run
+- The container automatically runs `mysql_upgrade` on startup
+- Make sure to persist the `/home/container` volume to avoid data loss
+- The `STARTUP` environment variable must be set for the container to function properly
+- Designed for use with Pterodactyl panel which handles startup commands and environment variables

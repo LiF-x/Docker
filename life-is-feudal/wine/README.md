@@ -4,18 +4,20 @@ This Docker container provides a Wine environment optimized for running the Life
 
 ## Features
 
-- Based on Debian Bullseye with latest stable Wine
-- Xvfb for headless operation
+- Based on parkervcp/yolks:wine_latest
+- Xvfb for headless operation (configurable)
 - Pre-configured Wine prefix
-- Required dependencies for Life is Feudal: Your Own
-- Support for additional Windows components for additional Windows components
+- SteamCMD integration for automatic updates
+- Wine Gecko and Mono installation support
+- Winetricks support for additional Windows components
 - Compatible with Pterodactyl panel
 - Non-root user for security
 
 ## Building the Image
 
 ```bash
-docker build -t lif-wine:latest .
+cd life-is-feudal
+docker build -f wine/Dockerfile -t lif-wine:latest .
 ```
 
 ## Running the Container
@@ -42,10 +44,16 @@ This image is designed to work with Pterodactyl. The panel will handle:
 
 ## Environment Variables
 
-- `WINEPREFIX`: Wine prefix location (default: /home/container/.wine)
-- `WINEARCH`: Wine architecture (default: win64)
-- `WINEDEBUG`: Wine debug level (default: -all for no debug output)
-- `DISPLAY`: X display for Xvfb (default: :99)
+- `WINEPREFIX`: Wine prefix location (default: /home/container/.wines)
+- `WINEDLLOVERRIDES`: Wine DLL overrides (default: "mscoree,mshtml=")
+- `DISPLAY`: X display (default: :0)
+- `DISPLAY_WIDTH`, `DISPLAY_HEIGHT`, `DISPLAY_DEPTH`: Display settings for Xvfb
+- `XVFB`: Enable Xvfb (0=disabled, 1=enabled, default: 0)
+- `AUTO_UPDATE`: Enable automatic SteamCMD updates (default: 1)
+- `STARTUP`: The startup command (provided by Pterodactyl)
+- `STEAM_USER`, `STEAM_PASS`, `STEAM_AUTH`: Steam credentials for updates
+- `SRCDS_APPID`: Steam App ID for the game server
+- `WINETRICKS_RUN`: Space-separated list of winetricks packages to install
 
 ## Ports
 

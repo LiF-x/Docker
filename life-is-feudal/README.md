@@ -7,18 +7,18 @@ This directory contains Docker container definitions for running Life is Feudal:
 ### 1. MariaDB Container
 Located in `mariadb/`
 
-A MariaDB 10.3 database container optimized for Life is Feudal: Your Own.
+A MariaDB database container for Life is Feudal: Your Own.
 
 **Key Features:**
-- Based on official MariaDB 10.3
-- Pre-configured for game server performance
-- UTF-8MB4 character set
-- Health checks included
+- Based on Debian Bookworm with MariaDB server
+- Lightweight and efficient
+- Compatible with Pterodactyl panel
+- Custom entrypoint for game server integration
 
 **Building:**
 ```bash
-cd mariadb
-docker build -t lif-mariadb:10.3 .
+cd life-is-feudal
+docker build -f mariadb/Dockerfile -t lif-mariadb:latest .
 ```
 
 See [mariadb/README.md](mariadb/README.md) for detailed documentation.
@@ -37,8 +37,8 @@ A Wine-based container for running the Life is Feudal: Your Own dedicated server
 
 **Building:**
 ```bash
-cd wine
-docker build -t lif-wine:latest .
+cd life-is-feudal
+docker build -f wine/Dockerfile -t lif-wine:latest .
 ```
 
 See [wine/README.md](wine/README.md) for detailed documentation.
@@ -48,13 +48,14 @@ See [wine/README.md](wine/README.md) for detailed documentation.
 ### Building Both Images
 
 ```bash
+# Build from the life-is-feudal directory
+cd life-is-feudal
+
 # Build MariaDB container
-cd life-is-feudal/mariadb
-docker build -t lif-mariadb:10.3 .
+docker build -f mariadb/Dockerfile -t lif-mariadb:latest .
 
 # Build Wine container
-cd ../wine
-docker build -t lif-wine:latest .
+docker build -f wine/Dockerfile -t lif-wine:latest .
 ```
 
 ### Running with Docker Compose
@@ -66,7 +67,7 @@ version: '3.8'
 
 services:
   database:
-    image: lif-mariadb:10.3
+    image: lif-mariadb:latest
     container_name: lif-database
     environment:
       MYSQL_ROOT_PASSWORD: your_secure_root_password
@@ -122,13 +123,9 @@ These containers are designed to integrate with Pterodactyl panel:
 ### Recommended Egg Configuration
 
 #### MariaDB Egg
-- **Docker Image:** `lif-mariadb:10.3`
-- **Startup Command:** Default (handled by image)
-- **Environment Variables:** 
-  - MYSQL_ROOT_PASSWORD
-  - MYSQL_DATABASE
-  - MYSQL_USER
-  - MYSQL_PASSWORD
+- **Docker Image:** `lif-mariadb:latest`
+- **Startup Command:** Configured via STARTUP environment variable
+- **Environment Variables:** As needed by your server configuration
 
 #### Game Server Egg
 - **Docker Image:** `lif-wine:latest`
