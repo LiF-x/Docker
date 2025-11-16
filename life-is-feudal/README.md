@@ -149,7 +149,7 @@ This egg configures the Life is Feudal: Your Own game server:
 - File parsers for `config_local.cs` and `config/world_1.xml`
 - Includes 16 configurable variables (server name, max players, database credentials, world type, etc.)
 
-#### 2. MariaDB Egg: `egg-mariadb-d-b10-3.json`
+#### 2. MariaDB Egg: `egg-mariadb-10-3.json`
 
 This egg configures the MariaDB 10.3 database server:
 - Uses `ghcr.io/lif-x/lif-mariadb:latest` Docker image
