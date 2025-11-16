@@ -102,7 +102,7 @@
             "name": "WINEDEBUG",
             "description": "",
             "env_variable": "WINEDEBUG",
-            "default_value": "",
+            "default_value": "-all",
             "user_viewable": false,
             "user_editable": false,
             "rules": "required|string|max:20",
