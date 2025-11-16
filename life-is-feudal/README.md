@@ -115,7 +115,7 @@ services:
     ports:
       - "28000:28000/udp"
       - "28100:28100/tcp"
-    command: wine /home/container/cm_server.exe
+    command: wine /home/container/ddctd_cm_yo_server.exe -worldID 1
     restart: unless-stopped
     networks:
       - lif-network

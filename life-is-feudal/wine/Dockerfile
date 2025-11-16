@@ -31,5 +31,5 @@ ENV             XVFB=0
 # Sets the default stop signal as wings can (currently) only send a kill or generic stop
 STOPSIGNAL SIGINT
 
-COPY            entrypoint.sh /entrypoint.sh
+COPY            wine/entrypoint.sh /entrypoint.sh
 CMD             [ "/bin/bash", "/entrypoint.sh" ]

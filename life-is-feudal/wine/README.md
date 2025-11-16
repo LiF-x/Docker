@@ -31,7 +31,7 @@ docker run -d \
   -p 28100:28100/tcp \
   -v lif-server:/home/container \
   lif-wine:latest \
-  wine /home/container/cm_server.exe
+  wine /home/container/ddctd_cm_yo_server.exe -worldID 1
 ```
 
 ### With Pterodactyl
@@ -69,7 +69,7 @@ Note: Life is Feudal server ports may be configurable in server settings.
 ## Server Installation
 
 1. Mount your game server files to `/home/container`
-2. Ensure the server executable (typically `cm_server.exe`) is present
+2. Ensure the server executable (`ddctd_cm_yo_server.exe`) is present
 3. Configure your server settings in the appropriate configuration files
 4. Start the container with the server executable as the command
 
