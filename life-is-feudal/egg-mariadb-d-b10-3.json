@@ -1,0 +1,31 @@
+{
+    "_comment": "DO NOT EDIT: FILE GENERATED AUTOMATICALLY BY PTERODACTYL PANEL - PTERODACTYL.IO",
+    "meta": {
+        "version": "PTDL_v2",
+        "update_url": null
+    },
+    "exported_at": "2025-11-16T15:32:58+00:00",
+    "name": "MariaDB 10.3",
+    "author": "christophe@rampart.games",
+    "description": "One of the most popular database servers. Made by the original developers of MySQL. Guaranteed to stay open source. Adopted for Life is Feudal",
+    "features": null,
+    "docker_images": {
+        "ghcr.io/lif-x/lif-mariadb:latest": "ghcr.io/lif-x/lif-mariadb:latest"
+    },
+    "file_denylist": [],
+    "startup": "{ /usr/sbin/mysqld & } && sleep 5 && mysql -u root",
+    "config": {
+        "files": "{\r\n    \".my.cnf\": {\r\n        \"parser\": \"file\",\r\n        \"find\": {\r\n            \"port\": \"port = {{server.build.default.port}}\",\r\n            \"bind-address\": \"bind-address=0.0.0.0\"\r\n        }\r\n    }\r\n}",
+        "startup": "{\r\n    \"done\": \"mysqld: ready for connections\"\r\n}",
+        "logs": "{}",
+        "stop": "shutdown; exit;"
+    },
+    "scripts": {
+        "installation": {
+            "script": "#!/bin/bash\r\n# MariaDB Installation Script\r\n#\r\n## add user\r\necho -e \"adding container user\"\r\nuseradd -d /home/container -m container -s /bin/bash\r\n# Server Files: /mnt/server\r\n## own server to container user\r\nchown container: /mnt/server/\r\n\r\n# Wait for the container to fully initialize\r\nsleep 1\r\n\r\necho -e \"installing dependencies\"\r\napt-get -y update\r\napt-get -y install curl\r\n\r\n# Information output\r\necho -e \"${BLUE}-------------------------------------------------${NC}\"\r\necho -e \"${YELLOW}Running on Debian: ${RED} $(cat /etc/debian_version)${NC}\"\r\necho -e \"${YELLOW}Current timezone: ${RED} $(cat /etc/timezone)${NC}\"\r\necho -e \"${BLUE}-------------------------------------------------${NC}\"\r\n\r\nif [ -d /mnt/server/mysql ]; then\r\n## if mysql exists, nuke it\r\n    rm -R /mnt/server/mysql\r\nfi\r\nif [ -d /mnt/server/data ]; then\r\n## if mysql exists, nuke it\r\n    rm -R /mnt/server/data\r\nfi\r\n## run install script as user\r\necho -e \"getting my.conf\"\r\nif [ -f /mnt/server/.my.cnf ]; then\r\n    echo -e \"moving current config for install\"s\r\n    mv /mnt/server/.my.cnf /mnt/server/custom.my.cnf\r\n    runuser -l container -c 'curl https://raw.githubusercontent.com/lif-x/docker/main/life-is-feudal/mariadb/install.my.cnf > /mnt/server/.my.cnf'\r\nelse\r\n    runuser -l container -c 'curl https://raw.githubusercontent.com/lif-x/docker/main/life-is-feudal/mariadb/install.my.cnf > /mnt/server/.my.cnf'\r\nfi\r\n## mkdir and install db\r\necho -e \"installing mysql database\"\r\nrunuser -l container -c 'mkdir -p /mnt/server/run/mysqld'\r\nrunuser -l container -c 'mkdir -p /mnt/server/log/mysql'\r\nrunuser -l container -c 'mkdir -p /mnt/server/tmp'\r\nrunuser -l container -c 'mkdir /mnt/server/mysql'\r\n\r\nrunuser -l container -c 'mysql_install_db --defaults-file=/mnt/server/.my.cnf'\r\n\r\n\r\nif [ -f /mnt/server/custom.my.cnf ]; then\r\n    echo -e \"moving current config back in place\"\r\n    mv /mnt/server/custom.my.cnf /mnt/server/.my.cnf\r\nelse\r\n    runuser -l container -c 'curl https://raw.githubusercontent.com/lif-x/docker/main/life-is-feudal/mariadb/my.cnf > /mnt/server/.my.cnf'\r\nfi\r\n\r\n\r\nrunuser -l container -c 'ls /mnt/server'\r\n\r\n## install end\r\necho \"-----------------------------------------\"\r\necho \"Installation completed...\"\r\necho \"-----------------------------------------\"",
+            "container": "mariadb:10.3",
+            "entrypoint": "bash"
+        }
+    },
+    "variables": []
+}

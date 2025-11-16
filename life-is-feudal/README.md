@@ -136,24 +136,41 @@ docker-compose up -d
 
 ## Using with Pterodactyl
 
-These containers are designed to integrate with Pterodactyl panel:
+### Pre-configured Eggs
 
-1. **Upload the images** to your container registry or build them on your Pterodactyl nodes
-2. **Create Pterodactyl eggs** that reference these images
-3. **Configure the eggs** with appropriate startup commands and environment variables
-4. **Deploy servers** through the Pterodactyl panel
+Two ready-to-use Pterodactyl eggs are included:
 
-### Recommended Egg Configuration
+#### 1. Game Server Egg: `egg-life-is-feudal-your-own.json`
 
-#### MariaDB Egg
-- **Docker Image:** `ghcr.io/lif-x/lif-mariadb:latest`
-- **Startup Command:** Configured via STARTUP environment variable
-- **Environment Variables:** As needed by your server configuration
+This egg configures the Life is Feudal: Your Own game server:
+- Uses `ghcr.io/lif-x/lif-wine:latest` Docker image
+- Pre-configured environment variables for database connection, server settings, and Wine configuration
+- Automatic SteamCMD installation script (App ID: 320850)
+- File parsers for `config_local.cs` and `config/world_1.xml`
+- Includes 16 configurable variables (server name, max players, database credentials, world type, etc.)
 
-#### Game Server Egg
-- **Docker Image:** `ghcr.io/lif-x/lif-wine:latest`
-- **Startup Command:** `wine /home/container/cm_server.exe` (adjust based on your server executable)
-- **Environment Variables:** As needed by your server configuration
+#### 2. MariaDB Egg: `egg-mariadb-d-b10-3.json`
+
+This egg configures the MariaDB 10.3 database server:
+- Uses `ghcr.io/lif-x/lif-mariadb:latest` Docker image
+- Automatic database initialization
+- Custom configuration files (`my.cnf` and `install.my.cnf`) hosted in this repository
+- File parser for `.my.cnf` to configure port and bind-address
+
+**To use:**
+1. Download both egg JSON files from this repository
+2. In your Pterodactyl panel, go to Admin → Nests
+3. Import both egg JSON files
+4. Create a MariaDB server first using the MariaDB egg
+5. Create a game server using the Life is Feudal egg and configure it to connect to your MariaDB server
+
+### Configuration Files
+
+The MariaDB egg uses two configuration files that are automatically downloaded during installation:
+- `mariadb/my.cnf` - Runtime MariaDB configuration
+- `mariadb/install.my.cnf` - Installation-time MariaDB configuration
+
+Both files are hosted in this repository and referenced in the egg installation script.
 
 ## Architecture
 

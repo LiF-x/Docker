@@ -1,0 +1,192 @@
+{
+    "_comment": "DO NOT EDIT: FILE GENERATED AUTOMATICALLY BY PTERODACTYL PANEL - PTERODACTYL.IO",
+    "meta": {
+        "version": "PTDL_v2",
+        "update_url": null
+    },
+    "exported_at": "2025-11-16T15:28:19+00:00",
+    "name": "Life is Feudal Your Own",
+    "author": "christophe@rampart.games",
+    "description": null,
+    "features": null,
+    "docker_images": {
+        "ghcr.io/lif-x/lif-wine:latest": "ghcr.io/lif-x/lif-wine:latest"
+    },
+    "file_denylist": [],
+    "startup": "{ xvfb-run wine ddctd_cm_yo_server.exe -worldID 1 & } && sleep 1 && expect -c \"set timeout 20; spawn telnet 127.0.0.1 28005; expect \\\"Torque Telnet Remote Console\\\"; send \\\"{{TELNET_PASSWORD}}\\r\\n\\\"; interact;\"",
+    "config": {
+        "files": "{\r\n    \"config_local.cs\": {\r\n        \"parser\": \"file\",\r\n        \"find\": {\r\n            \"$cm_config::DB::Connect::server\": \"$cm_config::DB::Connect::server = \\\"{{server.build.env.MYSQL_SERVER}}\\\";\",\r\n            \"$cm_config::DB::Connect::user\": \"$cm_config::DB::Connect::user = \\\"{{server.build.env.DATABASE_USERNAME}}\\\";\",\r\n            \"$cm_config::DB::Connect::password\": \"$cm_config::DB::Connect::password = \\\"{{server.build.env.DATABASE_PASSWORD}}\\\";\",\r\n            \"$cm_config::WorldZoneType\": \"$cm_config::WorldZoneType = \\\"{{server.build.env.WORLD_ZONE_TYPE}}\\\";\",\r\n            \"$telnet::bindAddress = \\\"127.0.0.1\\\";\": \"$telnet::bindAddress = \\\"127.0.0.1\\\";\",\r\n            \"telnetSetParameters(\": \"telnetSetParameters(28005, \\\"{{server.build.env.TELNET_PASSWORD}}\\\",\\\"noopr\\\",\\\"noopw\\\");\"\r\n        }\r\n    },\r\n    \"config/world_1.xml\": {\r\n        \"parser\": \"xml\",\r\n        \"find\": {\r\n            \"config.name\": \"{{server.build.env.SERVER_NAME}}\",\r\n            \"config.password\": \"{{server.build.env.SERVER_PASSWORD}}\",\r\n            \"config.port\": \"{{server.build.default.port}}\",\r\n            \"config.maxPlayers\": \"{{server.build.env.MAX_PLAYERS}}\"\r\n        }\r\n    }\r\n}",
+        "startup": "{\r\n    \"done\": [\r\n        \"Server is up and ready to accept connections\"\r\n    ]\r\n}",
+        "logs": "{}",
+        "stop": "^^C"
+    },
+    "scripts": {
+        "installation": {
+            "script": "#!/bin/bash\r\n# steamcmd Base Installation Script\r\n#\r\nclear\r\nRED='\\033[0;31m'\r\nGREEN='\\033[0;32m'\r\nYELLOW='\\033[1;33m'\r\nBLUE='\\033[0;34m'\r\nNC='\\033[0m'\r\n\r\napt update -y\r\napt -y --no-install-recommends install dos2unix telnet expect\r\n\r\necho -e \"${BLUE}-------------------------------------------------${NC}\"\r\necho -e \"${YELLOW}Sons of the Forrest Installscript${NC}\"\r\necho -e \"${BLUE}-------------------------------------------------${NC}\"\r\n\r\necho -e \"${BLUE}-------------------------------------------------${NC}\"\r\necho -e \"${YELLOW}download and install steamcmd. please wait...${NC}\"\r\necho -e \"${BLUE}-------------------------------------------------${NC}\"\r\n\r\n## just in case someone removed the defaults.\r\nif [[ \"${STEAM_USER}\" == \"\" ]] || [[ \"${STEAM_PASS}\" == \"\" ]]; then\r\n    echo -e \"steam user is not set.\\n\"\r\n    echo -e \"Using anonymous user.\\n\"\r\n    STEAM_USER=anonymous\r\n    STEAM_PASS=\"\"\r\n    STEAM_AUTH=\"\"\r\nelse\r\n    echo -e \"user set to ${STEAM_USER}\"\r\nfi\r\n\r\n## download and install steamcmd\r\ncd /tmp\r\nmkdir -p /mnt/server/steamcmd\r\ncurl -sSL -o steamcmd.tar.gz https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz\r\ntar -xzvf steamcmd.tar.gz -C /mnt/server/steamcmd\r\nmkdir -p /mnt/server/steamapps # Fix steamcmd disk write error when this folder is missing\r\ncd /mnt/server/steamcmd\r\n\r\n# SteamCMD fails otherwise for some reason, even running as root.\r\n# This is changed at the end of the install process anyways.\r\nchown -R root:root /mnt\r\nexport HOME=/mnt/server\r\necho -e \"${GREEN}..done..${NC}\"\r\n\r\n## install game using steamcmd\r\necho -e \"${BLUE}-------------------------------------------------${NC}\"\r\necho -e \"${YELLOW}install game using steamcmd. please wait...${NC}\"\r\necho -e \"${BLUE}-------------------------------------------------${NC}\"\r\n./steamcmd.sh +force_install_dir /mnt/server +login ${STEAM_USER} ${STEAM_PASS} ${STEAM_AUTH} $( [[ \"${WINDOWS_INSTALL}\" == \"1\" ]] && printf %s '+@sSteamCmdForcePlatformType windows' ) +app_update ${SRCDS_APPID} $( [[ -z ${SRCDS_BETAID} ]] || printf %s \"-beta ${SRCDS_BETAID}\" ) $( [[ -z ${SRCDS_BETAPASS} ]] || printf %s \"-betapassword ${SRCDS_BETAPASS}\" ) ${INSTALL_FLAGS} validate +quit ## other flags may be needed depending on install. looking at you cs 1.6\r\necho -e \"${GREEN}..done..${NC}\"\r\n\r\n## set up 32 bit libraries\r\nmkdir -p /mnt/server/.steam/sdk32\r\ncp -v linux32/steamclient.so ../.steam/sdk32/steamclient.so\r\n\r\n## set up 64 bit libraries\r\nmkdir -p /mnt/server/.steam/sdk64\r\ncp -v linux64/steamclient.so ../.steam/sdk64/steamclient.so\r\n\r\n## add below your custom commands if needed\r\n\r\nFILE=$HOME/config_local.cs\r\nif [ -f \"$FILE\" ]; then\r\n  echo -e \"${BLUE}-------------------------------------------------${NC}\"\r\n  echo -e \"${GREEN}config_local.cs found.${NC}\"\r\n  echo -e \"${BLUE}-------------------------------------------------${NC}\"\r\nelse  \r\n  echo -e \"${BLUE}-------------------------------------------------${NC}\"\r\n  echo -e \"${RED}No config_local.cs found. Downloading default...${NC}\"\r\n  echo -e \"${BLUE}-------------------------------------------------${NC}\"\r\n  cat <<'EOF' > \"$HOME/config_local.cs\"\r\n$cm_config::DB::Connect::server = \"\";\r\n$cm_config::DB::Connect::user = \"\";\r\n$cm_config::DB::Connect::password = \"\";\r\n$cm_config::WorldZoneType = \"\";\r\n$telnet::bindAddress = \"127.0.0.1\";\r\ntelnetSetParameters(28005, \"\",\"noopr\",\"noopw\");\r\nEOF\r\n\r\nfi\r\necho -e \"${GREEN}..done..${NC}\"\r\n\r\n## install end\r\necho -e \"${BLUE}-------------------------------------------------${NC}\"\r\necho -e \"${GREEN}Installation completed...${NC}\"\r\necho -e \"${BLUE}-------------------------------------------------${NC}\"\r\n\r\n#dos2unix \"/mnt/server/serverconfig/dedicatedserver.cfg\"\r\n\r\necho \"290080\" > /mnt/server/steam_appid.txt\r\n\r\n#Create .pteroignore\r\necho '' > /mnt/server/.pteroignore\r\necho '!serverconfig/' >> /mnt/server/.pteroignore",
+            "container": "ghcr.io/parkervcp/installers:debian",
+            "entrypoint": "bash"
+        }
+    },
+    "variables": [
+        {
+            "name": "QueryPort",
+            "description": "UDP port used by Steam to list the server and enable the discovery services. (should begameport + 1)",
+            "env_variable": "QUERY_PORT",
+            "default_value": "27016",
+            "user_viewable": false,
+            "user_editable": false,
+            "rules": "required|integer",
+            "field_type": "text"
+        },
+        {
+            "name": "Server Name",
+            "description": "Name of the server visible in the server list, and in the Steam contacts.",
+            "env_variable": "SERVER_NAME",
+            "default_value": "Pterodactyl hosted Server",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|max:60",
+            "field_type": "text"
+        },
+        {
+            "name": "Max Players",
+            "description": "The maximum number of players allowed simultaneously on the server. Maximum of 8 officially supported.",
+            "env_variable": "MAX_PLAYERS",
+            "default_value": "8",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|integer|min:1",
+            "field_type": "text"
+        },
+        {
+            "name": "Password",
+            "description": "If specified, players must provide this password to join the server. Can be blank for public access",
+            "env_variable": "SERVER_PASSWORD",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string",
+            "field_type": "text"
+        },
+        {
+            "name": "Gamemode",
+            "description": "Sets the difficulty game mode when creating a new save. This parameter is ignored if loading a save (save mode set to 'continue' with a save that exists on the slot). If the game mode is set to 'custom', then the custom game mode settings will be read from CustomGameModeSettings option, described later.",
+            "env_variable": "GAME_MODE",
+            "default_value": "normal",
+            "user_viewable": false,
+            "user_editable": false,
+            "rules": "string|in:normal,hard,hardsurvival,peaceful,custom",
+            "field_type": "text"
+        },
+        {
+            "name": "Auto Update",
+            "description": "Quickly checks for any server updates on startup, and updates if necessary.",
+            "env_variable": "AUTO_UPDATE",
+            "default_value": "1",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|boolean",
+            "field_type": "text"
+        },
+        {
+            "name": "SRCDS_APPID",
+            "description": "",
+            "env_variable": "SRCDS_APPID",
+            "default_value": "320850",
+            "user_viewable": false,
+            "user_editable": false,
+            "rules": "required|string|max:20",
+            "field_type": "text"
+        },
+        {
+            "name": "WINEDEBUG",
+            "description": "",
+            "env_variable": "WINEDEBUG",
+            "default_value": "",
+            "user_viewable": false,
+            "user_editable": false,
+            "rules": "required|string|max:20",
+            "field_type": "text"
+        },
+        {
+            "name": "WINEARCH",
+            "description": "",
+            "env_variable": "WINEARCH",
+            "default_value": "win64",
+            "user_viewable": false,
+            "user_editable": false,
+            "rules": "required|string|max:20",
+            "field_type": "text"
+        },
+        {
+            "name": "WINETRICKS_RUN",
+            "description": "",
+            "env_variable": "WINETRICKS_RUN",
+            "default_value": "vcrun2015",
+            "user_viewable": false,
+            "user_editable": false,
+            "rules": "required|string|max:20",
+            "field_type": "text"
+        },
+        {
+            "name": "WINDOWS_INSTALL",
+            "description": "",
+            "env_variable": "WINDOWS_INSTALL",
+            "default_value": "1",
+            "user_viewable": false,
+            "user_editable": false,
+            "rules": "required|string|max:20",
+            "field_type": "text"
+        },
+        {
+            "name": "MySQL Server",
+            "description": "IP:Port to the mysql server",
+            "env_variable": "MYSQL_SERVER",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string",
+            "field_type": "text"
+        },
+        {
+            "name": "Database username",
+            "description": "",
+            "env_variable": "DATABASE_USERNAME",
+            "default_value": "lif_1",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string",
+            "field_type": "text"
+        },
+        {
+            "name": "Database password",
+            "description": "",
+            "env_variable": "DATABASE_PASSWORD",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string",
+            "field_type": "text"
+        },
+        {
+            "name": "World type",
+            "description": "WorldZoneType",
+            "env_variable": "WORLD_ZONE_TYPE",
+            "default_value": "Green",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|in:Red,Green",
+            "field_type": "text"
+        },
+        {
+            "name": "Telnet Password",
+            "description": "Password for telnet console access",
+            "env_variable": "TELNET_PASSWORD",
+            "default_value": "changeme",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string",
+            "field_type": "text"
+        }
+    ]
+}
